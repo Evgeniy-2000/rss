@@ -20,28 +20,9 @@ public class ImageLoad extends AsyncTask<ArrayList<rss>, Integer, ArrayList<rss>
     }
 
     @Override
-    protected void onProgressUpdate(Integer... values) {
-        View itemView = getViewByPosition(values[0]);
-        ImageView imageView = itemView.findViewById(R.id.imageView);
-        imageView.setImageBitmap(((rss)(listView.getAdapter().getItem(values[0]))).getBitmap());
-    }
-
-    @Override
     protected void onPostExecute(ArrayList<rss> list) {
         mainActivity.imagesSaveToDb(list);
         super.onPostExecute(list);
-    }
-
-    public View getViewByPosition(int pos) {
-        final int firstListItemPosition = listView.getFirstVisiblePosition();
-        final int lastListItemPosition = firstListItemPosition + listView.getChildCount() - 1;
-        if (pos < firstListItemPosition || pos > lastListItemPosition ) {
-            return listView.getAdapter().getView(pos, null, listView);
-        }
-        else {
-            final int childIndex = pos - firstListItemPosition;
-            return listView.getChildAt(childIndex);
-        }
     }
 
     public ImageLoad(ListView listView, MainActivity mainActivity) {

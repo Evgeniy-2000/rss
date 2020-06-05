@@ -54,6 +54,7 @@ public class rssAdapter extends ArrayAdapter {
         title.setText(item.getTitle());
         date.setText(item.getDate());
         preview.setText(item.getPreview());
+
         if (item.getBitmap() != null) {
             image.setImageBitmap(item.getBitmap());
         }

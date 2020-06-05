@@ -14,11 +14,11 @@ import java.util.ArrayList;
 
 public class Database {
     public static final String TAG = "Repository";
-    private DatabaseOpenHelper dbhelper;
+    private DatabaseOpen dbhelper;
     private SQLiteDatabase db;
 
     public Database(Context context) {
-        dbhelper = new DatabaseOpenHelper(context);
+        dbhelper = new DatabaseOpen(context);
     }
 
     public void open() {
@@ -46,26 +46,29 @@ public class Database {
         db.execSQL("delete from bitmap;");
     }
 
-    public String getLastUrl()
+    /*public String getLastUrl()
     {
-        Cursor cursor = db.query(DatabaseOpenHelper.TABLE_LASTRSSURL, null, null, null, null, null, null);
+        Cursor cursor = db.query(DatabaseOpen.TABLE_LASTRSSURL, null, null, null, null, null, null);
+
         if (cursor.moveToFirst()) {
-            String last = cursor.getString(cursor.getColumnIndex(DatabaseOpenHelper.COLUMN_LASTRSSURL));
+            String last = cursor.getString(cursor.getColumnIndex(DatabaseOpen.COLUMN_LASTRSSURL));
             return  last;
         }
+
         return "";
     }
 
     public void setLastUrl(String lastrssurl) {
-        db.execSQL("delete from lastrssurl;");
+        /*db.execSQL("delete from lastrssurl;");
         ContentValues values = new ContentValues();
-        values.put(DatabaseOpenHelper.COLUMN_LASTRSSURL, lastrssurl);
-        db.insert(DatabaseOpenHelper.TABLE_LASTRSSURL, "_", values);
-    }
+        values.put(DatabaseOpen.COLUMN_LASTRSSURL, lastrssurl);
+        db.insert(DatabaseOpen.TABLE_LASTRSSURL, "_", values);
+    }*/
 
     public void clearImages(){
         db.execSQL("delete from bitmap;");
     }
+
 
     public long insertBitmap(Bitmap bitmap, String imageurl) {
         ContentValues valuesBitmap = new ContentValues();
@@ -73,33 +76,33 @@ public class Database {
         bitmap.compress(Bitmap.CompressFormat.PNG,100, baos);
         byte[] b = baos.toByteArray();
         String bitmapstr = Base64.encodeToString(b, Base64.DEFAULT);
-        valuesBitmap.put(DatabaseOpenHelper.COLUMN_BITMAPBYTES, bitmapstr);
-        valuesBitmap.put(DatabaseOpenHelper.COLUMN_IMAGEURL, imageurl);
-        return db.insert(DatabaseOpenHelper.TABLE_BITMAP, "_", valuesBitmap);
+        valuesBitmap.put(DatabaseOpen.COLUMN_BITMAPBYTES, bitmapstr);
+        valuesBitmap.put(DatabaseOpen.COLUMN_IMAGEURL, imageurl);
+        return db.insert(DatabaseOpen.TABLE_BITMAP, "_", valuesBitmap);
     }
 
     public long insertItem(rss item) {
         if (item.getBitmap() != null) {
             ContentValues valuesBitmap = new ContentValues();
-            valuesBitmap.put(DatabaseOpenHelper.COLUMN_IMAGEURL, item.getImageurl());
+            valuesBitmap.put(DatabaseOpen.COLUMN_IMAGEURL, item.getImageurl());
             Bitmap bitmap = item.getBitmap();
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.PNG,100, baos);
             byte[] b = baos.toByteArray();
             String bitmapstr = Base64.encodeToString(b, Base64.DEFAULT);
-            valuesBitmap.put(DatabaseOpenHelper.COLUMN_BITMAPBYTES, bitmapstr);
-            db.insert(DatabaseOpenHelper.TABLE_BITMAP, "_", valuesBitmap);
+            valuesBitmap.put(DatabaseOpen.COLUMN_BITMAPBYTES, bitmapstr);
+            db.insert(DatabaseOpen.TABLE_BITMAP, "_", valuesBitmap);
         }
-        return db.insert(DatabaseOpenHelper.TABLE_RSSITEM, "_", getValues(item));
+        return db.insert(DatabaseOpen.TABLE_RSSITEM, "_", getValues(item));
     }
 
     ContentValues getValues(rss item){
         ContentValues values = new ContentValues();
-        values.put(DatabaseOpenHelper.COLUMN_TITLE, item.getTitle());
-        values.put(DatabaseOpenHelper.COLUMN_PREVIEW, item.getPreview());
-        values.put(DatabaseOpenHelper.COLUMN_DATE, item.getDate());
-        values.put(DatabaseOpenHelper.COLUMN_LINK, item.getLink());
-        values.put(DatabaseOpenHelper.COLUMN_IMAGEURL, item.getImageurl());
+        values.put(DatabaseOpen.COLUMN_TITLE, item.getTitle());
+        values.put(DatabaseOpen.COLUMN_PREVIEW, item.getPreview());
+        values.put(DatabaseOpen.COLUMN_DATE, item.getDate());
+        values.put(DatabaseOpen.COLUMN_LINK, item.getLink());
+        values.put(DatabaseOpen.COLUMN_IMAGEURL, item.getImageurl());
         return values;
     }
 
@@ -111,7 +114,7 @@ public class Database {
         String imageurl;
         String date;
         ArrayList<rss> result = new ArrayList<>();
-        Cursor cursor = db.query(DatabaseOpenHelper.TABLE_RSSITEM, null, null, null, null, null, null);
+        Cursor cursor = db.query(DatabaseOpen.TABLE_RSSITEM, null, null, null, null, null, null);
         if (cursor.moveToFirst())
             do {
                 title = cursor.getString(cursor.getColumnIndex("title"));
@@ -125,7 +128,7 @@ public class Database {
                         Log.d(TAG, "select * from bitmap where imageurl = \"" + imageurl + "\";");
                         Cursor cursor1 = db.rawQuery("select * from bitmap where imageurl = \"" + imageurl + "\";", null);
                         if (cursor1.moveToFirst()) {
-                            String bitmapBytes = cursor1.getString(cursor1.getColumnIndex(DatabaseOpenHelper.COLUMN_BITMAPBYTES));
+                            String bitmapBytes = cursor1.getString(cursor1.getColumnIndex(DatabaseOpen.COLUMN_BITMAPBYTES));
                             byte [] encodeByte = Base64.decode(bitmapBytes, Base64.DEFAULT);
                             Bitmap bitmap = BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length);
                             rssItem.setBitmap(bitmap);

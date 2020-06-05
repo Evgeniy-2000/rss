@@ -6,10 +6,12 @@ import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
@@ -21,44 +23,42 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
     private static final String INTERNET_PERMISSION = Manifest.permission.INTERNET;
     private static final int REQUEST_INTERNET_PERMISSION_CODE = 2020;
-
     private rssAdapter rssListAdapter;
     private Database database;
     private ImageSave imageSave;
     private ImageLoad imageLoad;
     private GetRss getRss;
+    private SharedPreferences.Editor myEditor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         if (!isPermissionGranted(INTERNET_PERMISSION)) {
             requestPermission(INTERNET_PERMISSION, REQUEST_INTERNET_PERMISSION_CODE);
         }
-
-        ActionBar actionBar = getSupportActionBar();
-
+        ActionBar actionBar = getSupportActionBar();;
         if (actionBar != null) {
             actionBar.hide();
         }
-
         initializeData();
     }
 
     public void initializeData(){
+        SharedPreferences myPreferences
+                = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+        myEditor = myPreferences.edit();
+
         database = new Database(this);
         database.open();
-
         EditText edit = findViewById(R.id.rss_enter);
-        edit.setText(database.getLastUrl());
+
+        edit.setText(myPreferences.getString("LASTRSSURL", null));
 
         ArrayList<rss> array = database.getItems();
         rssListAdapter = new rssAdapter(this, array);
-
         ListView rss_list = findViewById(R.id.rss_list);
         rss_list.setAdapter(rssListAdapter);
-
         rss_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -70,7 +70,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         database.close();
-
         if (getRss != null) {
             getRss.cancel(true);
         }
@@ -80,7 +79,6 @@ public class MainActivity extends AppCompatActivity {
         if (imageSave != null) {
             imageSave.cancel(true);
         }
-
         super.onDestroy();
     }
 
@@ -95,7 +93,6 @@ public class MainActivity extends AppCompatActivity {
     public void onClick(View view) {
         NetworkInfo networkInfo = ((ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
         boolean networkStatus = networkInfo != null && networkInfo.isConnectedOrConnecting();
-
         if (networkStatus) {
             getRss = new GetRss(this);
             EditText edit = findViewById(R.id.rss_enter);
@@ -122,8 +119,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void saveToDb(ArrayList<rss> result, String str) {
         database.clear();
-        database.setLastUrl(str);
+        //database.setLastUrl(str);
         database.insertItems(result);
+        myEditor.putString("LASTRSSURL", str);
+        myEditor.commit();
     }
     //GetRss
 
